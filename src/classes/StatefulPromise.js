@@ -1,5 +1,5 @@
 import { None, Some } from './Option'
-import { Success, Failure } from './Try'
+import { Try, Success, Failure } from './Try'
 
 // A wrapper for Promise that also tracks state (isCompleted & result) which is accessible from outside
 export class StatefulPromise {
@@ -35,22 +35,21 @@ export class StatefulPromise {
 	// NB: If the wrapped promise returns a Failure as resolve, handles that as a rejection
 	then(onResolve = function(r) { return r }, onReject = function(e) { throw e }) { return this.wrapped.then(resolve => {
 		if (resolve instanceof Try)
-			resolve.match(s => onResolve(s), e => onReject(e));
+			return resolve.match(s => onResolve(s), e => onReject(e));
 		else
-			onResolve(resolve);
+			return onResolve(resolve);
 	}, onReject) };
-	catch(f) { return this.wrapped.catch(f) };
+	catch(f) { return this.then(s => s, e => f(e)) };
 	// Passed function should accept a Try
 	finally(f) { return this.wrapped.then(s => {
 		if (s instanceof Try)
-			f(s);
+			return f(s);
 		else
-			f(Success(s));
+			return f(Success(s));
 	}, e => f(Failure(e))) }
 
 	// Same as .then, but wraps the result in a stateful promise
-	thenWithState(onResolve, onReject) { return new StatefulPromise(this.then(onResolve, onReject)); }
-
+	thenWithState(onResolve = function(r) { return r }, onReject = function(e) { throw e }) { return new StatefulPromise(this.then(onResolve, onReject)); }
 
 	// All map functions accept either a Try or a success value. You can also throw in order to get a failure.
 	// Maps the result (Success or Failure) of this promise
