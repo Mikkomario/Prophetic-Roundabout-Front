@@ -1,4 +1,4 @@
-import { Option, None, Some } from './Option.js'
+import { None, Some } from './Option.js'
 
 // A class that represents a success or a failure
 export class Try {

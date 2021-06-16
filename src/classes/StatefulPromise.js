@@ -38,8 +38,8 @@ export class StatefulPromise {
 			return resolve.match(s => onResolve(s), e => onReject(e));
 		else
 			return onResolve(resolve);
-	}, onReject) };
-	catch(f) { return this.then(s => s, e => f(e)) };
+	}, onReject) }
+	catch(f) { return this.then(s => s, e => f(e)) }
 	// Passed function should accept a Try
 	finally(f) { return this.wrapped.then(s => {
 		if (s instanceof Try)

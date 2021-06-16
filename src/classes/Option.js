@@ -26,7 +26,7 @@ export class Option {
 	// Whether this option contains a non-null value
 	get nonEmpty() { return !this.isEmpty }
 	// Alias for nonEmpty
-	get isDefined() { return this.nonEmpty };
+	get isDefined() { return this.nonEmpty }
 	// Transforms Option[Option] to an Option
 	get flatten() {
 		if (this.isEmpty)

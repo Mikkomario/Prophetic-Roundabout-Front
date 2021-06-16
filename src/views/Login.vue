@@ -1,10 +1,10 @@
 <template>
 	<div class="block">
 		<p class="content">Please login in order to use this application</p>
-		<form style="max-width: 480px;">
+		<form class="block" style="max-width: 480px;">
 			<div class="field">
 				<label class="label">Email</label>
-				<input :class="fieldClasses(emailField)" type="text" v-model="emailField.text"">
+				<input :class="fieldClasses(emailField)" type="text" v-model="emailField.text">
 			</div>
 			<div class="field">
 				<label class="label">Password</label>
@@ -12,21 +12,19 @@
 			</div>
 			<button 
 				class="button is-primary" 
+				:class="{ 'is-loading': isLoading }"
 				style="width: 100%;" 
-				:disabled="emailField.isEmpty || passwordField.isEmpty" 
 				@click.prevent="attemptLogin()">
 				Login
 			</button>
 		</form>
-		<div class="block" v-else-if="isFailed">
-			<div class="notification is-danger">{{ displayErrorMessage }}</div>
+		<div class="block" v-if="isFailed">
+			<div class="notification is-danger">{{ errorMessage }}</div>
 		</div>
 	</div>
 </template>
 
 <script type="text/javascript">
-	import { None, Some } from '@/classes/Option'
-	import { Stateful } from '@/classes/StatefulPromise'
 	import { Field } from '@/classes/Field'
 
 	export default {
@@ -35,18 +33,12 @@
 			return {
 				emailField: Field.empty(true), 
 				passwordField: Field.empty(true), 
-				loginPromise: None, 
+				isLoading: false, 
 				errorMessage: ''
 			}
 		}, 
 		computed: {
-			displayErrorMessage() {
-				if (this.errorMessage.length > 0)
-					return this.errorMessage;
-				else
-					return this.loginPromise.flatMap(p => p.failure).match(e => e.message, () => '');
-			}, 
-			isFailed() { return this.displayErrorMessage.length > 0 }
+			isFailed() { return this.errorMessage.length > 0 }
 		}, 
 		methods: {
 			fieldClasses(field) {
@@ -60,18 +52,24 @@
 				if (this.emailField.test() && this.passwordField.test())
 				{
 					this.errorMessage = "";
+					const that = this;
 					console.log("Logging in...")
-					this.loginPromise = Some(Stateful(fetch(this.$config.server_address + 'quests/me/session-key', {
+					fetch(that.$config.api_address + 'quests/me/session-key', {
 						headers: {
-							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(this.emailField.text + ':' + this.passwordField.text)))
+							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(that.emailField.text + ':' + that.passwordField.text)))
 						}
 					}).then(response => {
 						if (response.ok) {
 							// TODO: On success, do something else (redirect etc.)
-							response.text().then(sessionKey => console.log(sessionKey.replace(/"/g,"")))
+							// TODO: Handle failure (catch)
+							// TODO: Prints this but doesn't do anything
+							response.text().then(sessionKey => { 
+								console.log('Got a session key!');
+								console.log(sessionKey.replace(/"/g,"")) 
+							}).catch(e => console.log(e));
 						}
 						else
-							response.text().catch(e => '').then(message => {
+							response.text().catch(() => '').then(message => {
 								console.log(response.status + ': ' + message);
 								if (!message || message.length === 0) {
 									if (response.status == 401)
@@ -84,7 +82,8 @@
 								else
 									throw new Error(message);
 							})
-					})));
+					}).catch(e => that.errorMessage = e.message)
+						.finally(() => that.isLoading = false);
 				}
 				else
 					this.errorMessage = "Please fill the required fields";
