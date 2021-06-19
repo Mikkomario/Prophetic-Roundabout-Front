@@ -7,6 +7,15 @@
   <router-view/>
 </template>
 
+<script type="text/javascript">
+  export default {
+    created() {
+      // Initializes config.json settings at application creation
+      this.$store.dispatch('init');
+    }
+  }
+</script>
+
 <style lang="scss">
 /*
 #app {

@@ -58,7 +58,7 @@
 					const email = this.emailField.text;
 					const that = this;
 
-					fetch(that.$config.api_address + 'quests/me/session-key', {
+					fetch(that.$store.state.serverAddress + 'quests/me/session-key', {
 						headers: {
 							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(email + ':' + that.passwordField.text)))
 						}
