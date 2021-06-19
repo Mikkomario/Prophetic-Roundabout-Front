@@ -25,6 +25,8 @@
 </template>
 
 <script type="text/javascript">
+	import { mapGetters } from 'vuex'
+	import { mapMutations } from 'vuex'
 	import { Field } from '@/classes/Field'
 
 	export default {
@@ -38,7 +40,8 @@
 			}
 		}, 
 		computed: {
-			isFailed() { return this.errorMessage.length > 0 }
+			isFailed() { return this.errorMessage.length > 0 }, 
+			...mapGetters(['authorizationHeader'])
 		}, 
 		methods: {
 			fieldClasses(field) {
@@ -52,20 +55,22 @@
 				if (this.emailField.test() && this.passwordField.test())
 				{
 					this.errorMessage = "";
+					const email = this.emailField.text;
 					const that = this;
-					console.log("Logging in...")
+
 					fetch(that.$config.api_address + 'quests/me/session-key', {
 						headers: {
-							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(that.emailField.text + ':' + that.passwordField.text)))
+							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(email + ':' + that.passwordField.text)))
 						}
 					}).then(response => {
 						if (response.ok) {
-							// TODO: On success, do something else (redirect etc.)
-							// TODO: Handle failure (catch)
-							// TODO: Prints this but doesn't do anything
 							response.text().then(sessionKey => { 
-								console.log('Got a session key!');
-								console.log(sessionKey.replace(/"/g,"")) 
+								// Stores the session key locally
+								that.login({
+									email: email, 
+									sessionKey: sessionKey.replace(/"/g,"")
+								});
+								// TODO: Redirect or something
 							}).catch(e => console.log(e));
 						}
 						else
@@ -88,11 +93,11 @@
 				else
 					this.errorMessage = "Please fill the required fields";
 			}
+			...mapMutations(['login'])
 		}, 
 		mounted() { 
 			// When mounted, attempts to read email from stored data
-			if (localStorage.email)
-				this.emailField.text = localStorage.email;
+			this.$store.state.email.foreach(email => this.emailField.text = email);
 		}
 	}
 </script>
