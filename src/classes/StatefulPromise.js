@@ -62,12 +62,20 @@ export class StatefulPromise {
 
 // Wraps a value, function or a promise into a stateful promise
 export function Stateful(p) {
-	if (p instanceof Promise)
+	// console.log('converting to stateful promise')
+	// console.log(p);
+	if (p instanceof Promise) {
+		// console.log('Converting a promise to a stateful promise')
 		return new StatefulPromise(p);
-	else if (p instanceof Try)
+	}
+	else if (p instanceof Try) {
+		// console.log('Converting a try into a stateful promise')
 		return p.match(s => StatefulPromise.resolve(s), e => StatefulPromise.reject(e));
-	else if (typeof p === 'function')
+	}
+	else if (typeof p === 'function') {
+		// console.log('Converting a function to a stateful promise')
 		return StatefulPromise.resolve(p());
+	}
 	else
 		return StatefulPromise.resolve(p);
 }

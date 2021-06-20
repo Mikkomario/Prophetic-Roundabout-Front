@@ -27,6 +27,15 @@ describe('StatefulPromise', () => {
 			done();
 		})
 	})
+	test('Stateful returns StatefulPromise', () => {
+		const p = delaySuccess(1);
+		expect(p instanceof Promise).toBe(true);
+		expect(Stateful(p) instanceof StatefulPromise).toBe(true);
+		expect(Stateful(Success(1)) instanceof StatefulPromise).toBe(true);
+		expect(Stateful(Failure(testError)) instanceof StatefulPromise).toBe(true);
+		expect(Stateful(1) instanceof StatefulPromise).toBe(true);
+		expect(Stateful(() => 1) instanceof StatefulPromise).toBe(true);
+	})
 
 	// Result & completion
 	test('state', done => {

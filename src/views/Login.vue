@@ -25,8 +25,7 @@
 </template>
 
 <script type="text/javascript">
-	import { mapGetters } from 'vuex'
-	import { mapMutations } from 'vuex'
+	import { mapGetters, mapMutations } from 'vuex'
 	import { Field } from '@/classes/Field'
 
 	export default {
@@ -54,10 +53,13 @@
 				// Makes sure the required fields have been filled
 				if (this.emailField.test() && this.passwordField.test())
 				{
+					this.isLoading = true;
 					this.errorMessage = "";
 					const email = this.emailField.text;
 					const that = this;
 
+					// FIXME: serverAddress is undefined (remove logs)
+					console.log('Logging to: ' + that.$store.state.serverAddress + 'quests/me/session-key');
 					fetch(that.$store.state.serverAddress + 'quests/me/session-key', {
 						headers: {
 							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(email + ':' + that.passwordField.text)))
@@ -65,12 +67,14 @@
 					}).then(response => {
 						if (response.ok) {
 							response.text().then(sessionKey => { 
+								console.log('Acquired session key');
+								console.log(sessionKey);
 								// Stores the session key locally
 								that.login({
 									email: email, 
 									sessionKey: sessionKey.replace(/"/g,"")
 								});
-								// TODO: Redirect or something
+								that.$router.push('me');
 							}).catch(e => console.log(e));
 						}
 						else
@@ -92,7 +96,7 @@
 				}
 				else
 					this.errorMessage = "Please fill the required fields";
-			}
+			}, 
 			...mapMutations(['login'])
 		}, 
 		mounted() { 

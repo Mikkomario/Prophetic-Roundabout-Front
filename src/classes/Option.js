@@ -4,7 +4,7 @@ export class Option {
 	// Accepts a value and wraps it
 	constructor(val) {
 		this._value = val;
-		this._empty = val == null || val == "";
+		this._empty = val == null || val === '';
 	}
 
 	// An empty option instance
@@ -52,6 +52,10 @@ export class Option {
 		else
 			return this.value;
 	}
+
+	// Checks whether the value equals another
+	contains(a) { return this.exists(v => v === a) }
+
 	// Performs a function over the value of this option, 
 	// if one is defined
 	foreach(f) {

@@ -149,4 +149,25 @@ describe('Option', () => {
 		expect(Some(1).flatMap(() => None).isEmpty).toBe(true);
 		expect(None.flatMap(() => Some(1)).isEmpty).toBe(true);
 	})
+
+	// Option creation from boolean and string
+	test('boolean option', () => {
+		expect(false == null).toBe(false);
+		expect(false === '').toBe(false);
+
+		const o1 = new Option(false);
+		const o2 = new Option(true);
+		const o3 = Some(false);
+		const o4 = Some(true);
+
+		expect(o1.isDefined).toBe(true);
+		expect(o2.isDefined).toBe(true);
+		expect(o3.isDefined).toBe(true);
+		expect(o4.isDefined).toBe(true);
+
+		expect(o1.value).toBe(false);
+		expect(o2.value).toBe(true);
+		expect(o3.value).toBe(false);
+		expect(o4.value).toBe(true);
+	})
 })
