@@ -42,7 +42,11 @@
 					Your Prophetic Roundabout account hasn't been linked to Zoom yet.<br>
 					Linking is required to enable some features, like scheduling a Roundabout meeting. 
 				</p>
-				<button class="button is-primary">Enable Zoom Features</button>
+				<button 
+					class="button is-primary" :class="{ 'is-loading': isLoadingZoom }" 
+					@click.prevent="redirectToZoomAuth()">
+					Enable Zoom Features
+				</button>
 			</div>
 		</div>
 	</div>
@@ -58,7 +62,8 @@
 				name: '', 
 				timeZone: new Option(Intl.DateTimeFormat().resolvedOptions().timeZone), 
 				isProAccount: false, 
-				isLinkedToZoom: None
+				isLinkedToZoom: None, 
+				isLoadingZoom: false
 			}
 		}, 
 		computed: {
@@ -94,6 +99,25 @@
 			...mapGetters(['authorizationHeader'])
 		}, 
 		methods: {
+			redirectToZoomAuth() {
+				this.isLoadingZoom = true;
+				const that = this;
+
+				this.getJson('zoom/login').then(json => {
+					that.isLoadingZoom = false;
+					// Expects the API to return url to redirect the user to
+					new Option(json.url).match(
+						url => location.href = url, 
+						() => {
+							if (json.is_authorized)
+								console.log("Already authorized!")
+							else
+								console.log(json.description)
+						}
+					)
+				}, e => console.log(e)).finally(that.isLoadingZoom = false);
+			}, 
+
 			...mapActions(['getJson', 'push'])
 		}, 
 		created() {
