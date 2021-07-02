@@ -28,8 +28,12 @@ const routes = [
 {
 	path: '/zoom-auth-result', 
 	name: 'ZoomAuthResult', 
-	component: () => import('../views/ZoomAuthResult.vue'), 
-	props: true
+	component: () => import('../views/ZoomAuthResult.vue')
+}, 
+{
+	path: '/schedule', 
+	name: 'Schedule', 
+	component: () => import('../views/Schedule.vue')
 }
 ]
 
