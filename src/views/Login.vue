@@ -62,7 +62,8 @@
 					console.log('Logging to: ' + that.$store.state.serverAddress + 'quests/me/session-key');
 					fetch(that.$store.state.serverAddress + 'quests/me/session-key', {
 						headers: {
-							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(email + ':' + that.passwordField.text)))
+							'Authorization': 'Basic ' + window.btoa(unescape(encodeURIComponent(email + ':' + that.passwordField.text))), 
+							'X-Style': 'simple'
 						}
 					}).then(response => {
 						if (response.ok) {

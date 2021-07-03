@@ -44,6 +44,7 @@
 
 <script type="text/javascript">
 	import bulmaCalendar from 'bulma-calendar';
+	import { mapActions } from 'vuex'
 
 	export default {
 		data() {
@@ -51,7 +52,14 @@
 				date: new Date()
 			}
 		}, 
+		methods: {
+			...mapActions(['myRoundabouts'])
+		}, 
+		created() {
+			// Retrieves an up-to-date list of user's roundabout
+		}, 
 		mounted() {
+			// Sets up the calendar component
 			const calendar = new bulmaCalendar(this.$refs.trigger, {
 				startDate: this.date, 
 				dateFormat: 'dd.MM.yyyy', 
