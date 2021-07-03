@@ -1,8 +1,27 @@
+import { Iterator } from './Iterator'
+import { Iterable } from './Iterable'
+
+class OptionIterator extends Iterator {
+	// Constructor takes the item to wrap, which may be null
+	constructor(val) {
+		super();
+		this._value = val;
+	}
+
+	// Implemented
+	get hasNext() { return this._value != null }
+	next() { 
+		const result = this._value
+		this._value = null;
+		return result;
+	}
+}
 
 // An immutable class that handles cases where a value is null
-export class Option {
+export class Option extends Iterable {
 	// Accepts a value and wraps it
 	constructor(val) {
+		super();
 		this._value = val;
 		this._empty = val == null || val === '';
 	}
@@ -11,6 +30,9 @@ export class Option {
 	static none = new Option(null);
 	// A defined option instance (val must not be null)
 	static some(val) { return new Option(val) }
+
+	// Implemented
+	iterator() { return new OptionIterator(this._value) }
 
 	// Value of this option. May be null.
 	get value() { return this._value }
@@ -52,9 +74,6 @@ export class Option {
 		else
 			return this.value;
 	}
-
-	// Checks whether the value equals another
-	contains(a) { return this.exists(v => v === a) }
 
 	// Performs a function over the value of this option, 
 	// if one is defined
