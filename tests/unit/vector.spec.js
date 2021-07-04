@@ -82,4 +82,31 @@ describe('Vector', () => {
 		expect(array.length).toBe(3);
 		expect(array[0]).toBe(2);
 	})
+
+	test('map', () => {
+		const mapped = v.map(i => i + 1);
+		expect(mapped.size).toBe(3);
+		expect(mapped.head).toBe(2);
+	})
+
+	test('flatMap', () => {
+		const mapped = v.flatMap(i => [i, i + 1]);
+		expect(mapped.size).toBe(6);
+		expect(mapped.head).toBe(1);
+		expect(mapped.get(1)).toBe(2);
+	})
+
+	test('filterWith', () => {
+		const array = v.filterWith(i => i > 1);
+		expect(array.length).toBe(2);
+		expect(array[0]).toBe(2);
+		expect(array[1]).toBe(3);
+	})
+
+	test('filter', () => {
+		const v2 = v.filter(i => i > 1);
+		expect(v2.size).toBe(2);
+		expect(v2.head).toBe(2);
+		expect(v2.get(1)).toBe(3);
+	})
 })

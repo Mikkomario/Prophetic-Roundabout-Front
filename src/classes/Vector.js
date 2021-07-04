@@ -59,4 +59,10 @@ export class Vector extends Iterable {
 		else
 			return Some(this.get(index));
 	}
+
+	filter(f) { return new Vector(this.filterWith(f)); }
+	filterNot(f) { return this.filter(a => !f(a)); }
+
+	map(f) { return new Vector(this.mapWith(f)); }
+	flatMap(f) { return new Vector(this.flatMapWith(f)); }
 }

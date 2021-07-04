@@ -1,6 +1,6 @@
 // A simple builder class
 // Builders have methods add(item) and result() which builds the complete item
-class ArrayBuilder {
+export class ArrayBuilder {
 	constructor() {
 		this._buffer = [];
 	}
@@ -64,15 +64,45 @@ export class Iterable {
 	// Checks whether the value equals another
 	contains(a) { return this.exists(v => v == a) }
 
+	// Only keeps items that are accepted by the specified filter function
+	filterWith(f, builder = new ArrayBuilder()) {
+		this.foreach(a => {
+			if (f(a))
+				builder.add(a);
+		})
+		return builder.result();
+	}
+
 	// Maps the contents of this iterable item into another iterable item
 	mapWith(f, builder = new ArrayBuilder()) {
 		this.foreach(a => builder.add(f(a)));
 		return builder.result();
 	}
-	/* TODO: Continue
+	// Maps the contents of this iterable item into another iterable item. Flattens in between.
 	flatMapWith(f, builder = new ArrayBuilder()) {
-
-	}*/
+		this.foreach(a => {
+			const items = f(a);
+			if (items instanceof Iterable)
+				items.foreach(item => builder.add(item));
+			else if (Array.isArray(items))
+				items.forEach(item => builder.add(item));
+			else
+				builder.add(items);
+		});
+		return builder.result();
+	}
+	// Flattens Iterable[Iterable] to just Iterable
+	fattenWith(builder = new ArrayBuilder) {
+		this.foreach(a => {
+			if (a instanceof Iterable)
+				a.foreach(item => builder.add(item));
+			else if (Array.isArray(a))
+				a.forEach(item => builder.add(item));
+			else
+				builder.add(a);
+		})
+		return builder.result();
+	}
 
 	// Support for JS iteration
 	[Symbol.iterator]() { return this.iterator().symbol }

@@ -1,5 +1,7 @@
 import { createStore } from 'vuex'
 import { Option, Some, None } from '@/classes/Option'
+import { Vector } from '@/classes/Vector'
+import { Roundabout } from '@/classes/Roundabout'
 
 const millisToSeconds = 1000;
 const millisToHours = 60 * 60 * millisToSeconds;
@@ -15,7 +17,7 @@ export default createStore({
 		sessionKey: new Option(localStorage.sessionKey), 
 		sessionStart: new Option(localStorage.sessionStart).map(dateNumber => new Date(parseInt(dateNumber, 10))), 
 
-		myRoundabouts: [], 
+		myRoundabouts: Vector.empty, 
 		myRoundaboutsUpdate: None
 	}, 
 	getters: {
@@ -159,16 +161,17 @@ export default createStore({
 			// Case: Can and should fetch new data
 			if (getters.isSessionOpen && !getters.updatedRoundaboutsRecently) {
 				// Performs the fetch
-				dispatch('getJsonIfModified', {
+				return dispatch('getJsonIfModified', {
 					path: 'users/me/organizations', 
 					since: state.myRoundaboutsUpdate
 				}).then(
 					result => result.match(
 						// Case: New data read => updates cache and returns new data
 						json => {
-							// TODO: parse roundabouts from json
-							commit('setMyRoundabouts', json);
-							return json;
+							console.log('Read roundabouts: ' + JSON.stringify(json));
+							const roundabouts = new Vector(json.map(a => Roundabout.fromJson(a)));
+							commit('setMyRoundabouts', roundabouts);
+							return roundabouts;
 						}, 
 						// Case: Not Modified => returns cached data
 						() => state.myRoundabouts
