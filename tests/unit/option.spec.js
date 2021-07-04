@@ -170,4 +170,23 @@ describe('Option', () => {
 		expect(o3.value).toBe(false);
 		expect(o4.value).toBe(true);
 	})
+
+	test('for loop', () => {
+		let calls = 0;
+		for (const item of newEmpty) {
+			calls += 1;
+		}
+		expect(calls).toBe(0);
+		for (const item of newSome) {
+			expect(item).toBe(1);
+			calls += 1;
+		}
+		expect(calls).toBe(1);
+	})
+
+	test('toArray', () => {
+		const array = newSome.toArray;
+		expect(array.length).toBe(1);
+		expect(array[0]).toBe(1);
+	})
 })

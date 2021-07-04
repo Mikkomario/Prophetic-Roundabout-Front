@@ -62,4 +62,24 @@ describe('Vector', () => {
 		expect(v.contains(1)).toBe(true);
 		expect(v.contains(0)).toBe(false);
 	})
+
+	test('for loop', () => {
+		let sum = 0;
+		for (const i of v) {
+			sum += i;
+		}
+		expect(sum).toBe(6);
+	})
+
+	test('toArray', () => {
+		const array = v.toArray
+		expect(array.length).toBe(3);
+		expect(array[1]).toBe(2);
+	})
+
+	test('mapWith', () => {
+		const array = v.mapWith(i => i + 1);
+		expect(array.length).toBe(3);
+		expect(array[0]).toBe(2);
+	})
 })

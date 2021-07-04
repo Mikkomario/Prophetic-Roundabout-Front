@@ -1,3 +1,19 @@
+// A simple builder class
+// Builders have methods add(item) and result() which builds the complete item
+class ArrayBuilder {
+	constructor() {
+		this._buffer = [];
+	}
+
+	add(item) {
+		this._buffer.push(item);
+	}
+	result() {
+		const r = this._buffer;
+		this._buffer = [];
+		return r;
+	}
+}
 
 // A common abstract class for all items that can be iterated
 export class Iterable {
@@ -14,6 +30,13 @@ export class Iterable {
 
 	// The first item in this iterable
 	get head() { return this.iterator().next }
+
+	// An array with the contents of this iterable item
+	get toArray() {
+		const array = [];
+		this.foreach(a => array.push(a));
+		return array;
+	}
 
 	// Calls the specified function for each item
 	foreach(f) { this.iterator().foreach(f); }
@@ -40,6 +63,16 @@ export class Iterable {
 
 	// Checks whether the value equals another
 	contains(a) { return this.exists(v => v == a) }
+
+	// Maps the contents of this iterable item into another iterable item
+	mapWith(f, builder = new ArrayBuilder()) {
+		this.foreach(a => builder.add(f(a)));
+		return builder.result();
+	}
+	/* TODO: Continue
+	flatMapWith(f, builder = new ArrayBuilder()) {
+
+	}*/
 
 	// Support for JS iteration
 	[Symbol.iterator]() { return this.iterator().symbol }
