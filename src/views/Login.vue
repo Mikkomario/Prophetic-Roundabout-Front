@@ -79,7 +79,7 @@
 							}).catch(e => console.log(e));
 						}
 						else
-							response.text().catch(() => '').then(message => {
+							return response.text().catch(() => '').then(message => {
 								console.log(response.status + ': ' + message);
 								if (!message || message.length === 0) {
 									if (response.status == 401)

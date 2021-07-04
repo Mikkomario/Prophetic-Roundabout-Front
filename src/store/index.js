@@ -137,13 +137,13 @@ export default createStore({
 		// - body (object, sent as json) 
 		// - method (default = POST)
 		// Returns Promise[Response]
-		push(context, payload) {
-			if (context.getters.isSessionOpen) {
+		push({ state, getters }, payload) {
+			if (getters.isSessionOpen) {
 				if (payload.path != null && payload.body != null)
-					return fetch(payload.path, { 
+					return fetch(state.serverAddress + payload.path, { 
 						method: new Option(payload.method).getOrElse(() => 'POST'), 
 						headers: { 
-							'Authorization': context.getters.authorizationHeader, 
+							'Authorization': getters.authorizationHeader, 
 							'Content-Type': 'application/json'
 						}, 
 						body: JSON.stringify(payload.body)

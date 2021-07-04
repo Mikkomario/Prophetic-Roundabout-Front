@@ -3,7 +3,7 @@
 		<h1 class="title is-2">Schedule a new meeting</h1>
 		<div class="card block">
 			<div class="card-content">
-				<form>
+				<form class="block">
 					<label class="label">Roundabout</label>
 					<div class="field is-grouped">
 						<p class="control">
@@ -43,6 +43,9 @@
 						</p>
 					</div>
 				</form>
+				<div class="block" v-if="isFailed">
+					<div class="notification is-danger">{{ errorMessage }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -80,17 +83,45 @@
 				if (this.nameField.test()) {
 					if (this.selectedRoundaboutId > 0) {
 						this.roundaboutFlag = false;
+						this.errorMessage = '';
 
+						// Sends meeting data to server
 						this.isLoading = true;
-						/*
 						const that = this;
 						this.push({
 							path: `organizations/${this.selectedRoundaboutId}/meetings`, 
 							body: {
 								"name": this.nameField.text, 
-								"start_time_local": ""
+								"start_time": this.date.toISOString()
 							}
-						})*/
+						}).then(response => {
+							if (response.ok) {
+								that.errorMessage = '';
+								// TODO: Redirect to meetings
+								console.log('Schedule successful');
+							}
+							else {
+								// On 401 Unauthorized, redirects back to login
+								if (response.status == 401) {
+									console.log('Session expired');
+									that.$router.push('login');
+								}
+								else {
+									return response.text().catch(() => '').then(message => {
+										console.log(response.status + ': ' + message);
+										if (!message || message.length === 0) {
+											if (response.status >= 500)
+												throw new Error('Server side error');
+											else
+												throw new Error('Failed to schedule a meeting');
+										}
+										else
+											throw new Error(message);
+									})
+								}
+							}
+						}).catch(error => that.errorMessage = error.message)
+						.finally(() => that.isLoading = false);
 					}
 					else {
 						this.roundaboutFlag = true;
@@ -133,9 +164,9 @@
 				validateLabel: 'OK'
 			})
 			calendar.on('select', e => {
-				this.date = e.data.time
-				console.log(e);
-				console.log(this.date);
+				this.date = e.data.time.start
+				// console.log(e);
+				// console.log(this.date);
 			})
 		}
 	}
