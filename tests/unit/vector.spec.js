@@ -109,4 +109,29 @@ describe('Vector', () => {
 		expect(v2.head).toBe(2);
 		expect(v2.get(1)).toBe(3);
 	})
+	test('filterNot', () => {
+		const v2 = v.filterNot(i => i > 1);
+		expect(v2.size).toBe(1);
+		expect(v2.head).toBe(1);
+	})
+
+	test('find', () => {
+		const result = v.find(i => i > 1);
+		expect(result.isDefined).toBe(true);
+		expect(result.get).toBe(2);
+	})
+
+	test('distinct', () => {
+		const v2 = new Vector([1, 2, 3, 3, 2, 1]).distinct
+		expect(v2.size).toBe(3);
+		expect(v2.head).toBe(1);
+		expect(v2.get(1)).toBe(2);
+		expect(v2.get(2)).toBe(3);
+	})
+	test('distinctBy', () => {
+		const v2 = v.distinctBy((a, b) => (a % 2) == (b % 2));
+		expect(v2.size).toBe(2);
+		expect(v2.head).toBe(1);
+		expect(v2.get(1)).toBe(2);
+	})
 })

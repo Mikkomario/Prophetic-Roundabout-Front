@@ -103,7 +103,34 @@ export class Iterable {
 		})
 		return builder.result();
 	}
+	// Maps the items in this iterable asynchronously (using await)
+	async asyncMapWith(f, builder = new ArrayBuilder()) {
+		const iter = this.iterator();
+		while (iter.hasNext) {
+			// Wraps the result into a promise to make sure it can be awaited
+			const mapResult = Promise.resolve(f(iter.next()));
+			const waitResult = await mapResult;
+			builder.add(waitResult);
+		}
+		return builder.result();
+	}
 
 	// Support for JS iteration
 	[Symbol.iterator]() { return this.iterator().symbol }
+
+	// Returns the first item that satisfies the specified search condition
+	// An implementation of find which doesn't return an option (because of dependency problems)
+	// This method is intended for subclass use, so that they can provide a finalized implementation
+	_find(f) {
+		const iter = this.iterator();
+		let result = null;
+
+		while (result == null && iter.hasNext) {
+			const next = iter.next();
+			if (f(next))
+				result = next;
+		}
+
+		return result;
+	}
 }

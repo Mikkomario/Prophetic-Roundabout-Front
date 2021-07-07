@@ -99,6 +99,16 @@ export class Option extends Iterable {
 		else
 			return f(this.value);
 	}
+
+	find(f) { return this.filter(f); }
+	filter(f) {
+		if (this.isEmpty || f(this.value))
+			return this;
+		else
+			return Option.none;
+	}
+	filterNot(f) { return this.filter(a => !f(a)) }
+
 	// Calls one of the specified functions, based on whether this option is defined or empty
 	// Returns the return value of the called function
 	match(valueHandler, emptyHandler) {
@@ -107,6 +117,7 @@ export class Option extends Iterable {
 		else
 			return valueHandler(this.value);
 	}
+
 	// Creates a new option based on the value of this option, if one is defined. 
 	// Returns an empty option if this option is empty.
 	map(f) {

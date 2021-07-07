@@ -2,11 +2,14 @@ import { createStore } from 'vuex'
 import { Option, Some, None } from '@/classes/Option'
 import { Vector } from '@/classes/Vector'
 import { Roundabout } from '@/classes/Roundabout'
+import { Meeting } from '@/classes/Meeting'
 
 const millisToSeconds = 1000;
 const millisToHours = 60 * 60 * millisToSeconds;
 function secondsSince(date) { return Math.floor(date - new Date()) / millisToSeconds }
 function hoursSince(date) { return Math.floor(date - new Date()) / millisToHours }
+
+function updatedRecently(lastUpdate, seconds = 120) { return lastUpdate.exists(update => secondsSince(update) <= seconds) }
 
 export default createStore({
 	state: {
@@ -18,7 +21,13 @@ export default createStore({
 		sessionStart: new Option(localStorage.sessionStart).map(dateNumber => new Date(parseInt(dateNumber, 10))), 
 
 		myRoundabouts: Vector.empty, 
-		myRoundaboutsUpdate: None
+		myRoundaboutsUpdate: None, 
+
+		myMeetings: {
+			hosting: Vector.empty, 
+			other: Vector.empty
+		}, 
+		myMeetingsUpdate: None
 	}, 
 	getters: {
 		// Returns whether a session should still be open (unless closed on server side)
@@ -32,7 +41,10 @@ export default createStore({
 
 		// Checks whether roundabout data was updated within the last 60 seconds
 		updatedRoundaboutsRecently: state => {
-			return state.myRoundaboutsUpdate.exists(update => secondsSince(update) <= 60);
+			return updatedRecently(state.myRoundaboutsUpdate);
+		}, 
+		updatedMeetingsRecently: state => {
+			return updatedRecently(state.myMeetingsUpdate);
 		}
 	}, 
 	mutations: {
@@ -55,6 +67,10 @@ export default createStore({
 		setMyRoundabouts(state, roundabouts) {
 			state.myRoundabouts = roundabouts;
 			state.myRoundaboutsUpdate = Some(new Date());
+		}, 
+		setMyMeetings(state, meetings) {
+			state.myMeetings = meetings;
+			state.myMeetingsUpdate = Some(new Date());
 		}
 	},
 	actions: { 
@@ -186,6 +202,55 @@ export default createStore({
 			// Case: Can't or doesn't need to fetch new data
 			else
 				return Promise.resolve(state.myRoundabouts);
+		}, 
+		myMeetings({ state, getters, dispatch, commit }) {
+			if (getters.isSessionOpen && !getters.updatedMeetingsRecently) {
+				// Performs the fetch
+				return dispatch('getJsonIfModified', {
+					path: 'users/me/meetings', 
+					since: state.myMeetingsUpdate
+				}).then(result => result.match(json => {
+					// Case: New data read => May need to acquire organization or user data
+					const oldMeetings = state.myMeetings.hosting.plus(state.myMeetings.other);
+					const hostingMeetings = new Vector(json.hosting);
+					const otherMeetings = new Vector(json.other);
+					const allMeetings = hostingMeetings.plus(otherMeetings);
+					const meetingRoundaboutIds = allMeetings.map(meeting => meeting.host_organization_id).distinct;
+					const meetingHostIds = otherMeetings.map(meeting => meeting.host_id).distinct;
+					const oldMeetingHostIds = oldMeetings.map(meeting => meeting.host.id).distinct;
+					const newHostIds = meetingHostIds.filterNot(id => oldMeetingHostIds.contains(id));
+
+					const roundaboutsPromise = meetingRoundaboutIds.forall(id => state.myRoundabouts.exists(r => r.id == id)) ? 
+						Promise.resolve(state.myRoundabouts) : dispatch('myRoundabouts');
+
+					// Combines the data into a new set of meetings, then updates the cache
+					return roundaboutsPromise.then(roundabouts => {
+						const newUsersPromise = newHostIds.asyncMap(hostId => dispatch('getJson', `users/${hostId}`));
+						newUsersPromise.then(newUsers => {
+							const allUsers = oldMeetings.map(m => m.host).distinctBy((a, b) => a.id == b.id).plus(newUsers);
+							function roundaboutForId(id) { return roundabouts.find(r => r.id == id) }
+							function userForId(id) { return allUsers.find(user => user.id == id) }
+							function meetingFromJson(json) { return new Meeting(json.id, json.zoom_id, 
+								roundaboutForId(json.host_organization_id).get, json.name, 
+								new Date(json.start_time), json.duration_minutes, json.password, json.join_url, userForId(json.host_id)) 
+							}
+
+							const newMeetings = {
+								hosting: hostingMeetings.map(json => meetingFromJson(json)), 
+								other: otherMeetings.map(json => meetingFromJson(json))
+							}
+							commit('setMyMeetings', newMeetings);
+							return newMeetings;
+						})
+					})
+
+				}, () => state.myMeetings)).catch(e => {
+					console.log(e);
+					return state.myMeetings;
+				})
+			}
+			else
+				return Promise.resolve(state.myMeetings);
 		}, 
 
 		// Initializes host server address from a separate config.json file. Should be called only once at application startup.
