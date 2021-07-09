@@ -1,4 +1,5 @@
 import { None } from './Option'
+// import { Vector } from './Vector'
 
 // Represents a single meeting instance. These classes are meant to be immutable
 export class Meeting {
@@ -36,4 +37,13 @@ export class Meeting {
 
 	get hostId() { return this.host.map(h => h.id) }
 	get hostName() { return this.host.map(h => h.name) }
+
+	/*
+	get invitationLines(inviterName) { 
+		const hostPart = host.match(h => ` by ${h.name}`, () => '');
+		return new Vector([
+			`${inviterName} invites you to ${this.name} at ${this.roundabout.name}${hostPart}`, 
+			`Meeting starts at `
+		]) 
+	}*/
 }

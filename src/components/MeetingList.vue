@@ -1,6 +1,6 @@
 <template>
 	<div class="block">
-		<meeting-box :is-host="isHost"></meeting-box>
+		<meeting-box v-for="meeting of meetings" :key="meeting.id" :is-host="isHost" :meeting="meeting"></meeting-box>
 	</div>
 </template>
 
