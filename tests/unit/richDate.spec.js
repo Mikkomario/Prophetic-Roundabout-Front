@@ -1,5 +1,5 @@
 import { RichDate } from '@/classes/RichDate'
-import { hours } from '@/classes/Duration'
+import { hours, minutes } from '@/classes/Duration'
 
 describe('RichDate', () => {
 	const origin = new RichDate('2021-07-10T12:09');
@@ -73,5 +73,49 @@ describe('RichDate', () => {
 	test('minus', () => {
 		expect(origin.minus(origin.atBeginningOfDay).toFullHours).toBe(12);
 		expect(origin.minus(hours(2)).hour).toBe(10);
+	})
+
+	test('tomorrow', () => {
+		const t = origin.tomorrow;
+		expect(t.dayOfWeekIndex).toBe(0);
+		expect(t.dayOfWeekName).toBe('Sunday');
+		expect(t.hour).toBe(12);
+		expect(t.minute).toBe(9);
+	})
+
+	test('hasSameTimeAs', () => {
+		expect(origin.hasSameTimeAs(origin)).toBe(true);
+		expect(origin.tomorrow.hasSameTimeAs(origin)).toBe(true);
+		expect(origin.plus(hours(1)).hasSameTimeAs(origin)).toBe(false);
+		expect(origin.atBeginningOfDay.hasSameTimeAs(origin)).toBe(false);
+	})
+	test('hasSameDateAs', () => {
+		expect(origin.plus(hours(2)).hasSameDateAs(origin)).toBe(true);
+		expect(origin.tomorrow.hasSameDateAs(origin)).toBe(false);
+	})
+
+	test('yesterday', () => {
+		const y = origin.yesterday;
+		expect(y.dayOfWeekIndex).toBe(5);
+		expect(y.hasSameTimeAs(origin)).toBe(true);
+	})
+
+	test('until', () => {
+		const t = origin.tomorrow;
+		expect(origin.until(t).toHours).toBe(24);
+		expect(t.until(origin).toHours).toBe(-24);
+
+		const a = origin.plus(minutes(5));
+		expect(origin.until(a).toMinutes).toBe(5);
+		expect(a.until(origin).toMinutes).toBe(-5);
+	})
+	test('since', () => {
+		const t = origin.tomorrow;
+		expect(origin.since(t).toHours).toBe(-24);
+		expect(t.since(origin).toHours).toBe(24);
+
+		const a = origin.plus(minutes(5));
+		expect(origin.since(a).toMinutes).toBe(-5);
+		expect(a.since(origin).toMinutes).toBe(5);
 	})
 })

@@ -37,6 +37,9 @@ export class Vector extends Iterable {
 		function f(i) { return that.get(i); }
 		return new IndexIterator(f, this.size) 
 	}
+	toString() {
+		return `[${this.mkString(', ')}]`
+	}
 
 	// Number of items in this vector
 	get size() { return this._size }
@@ -49,9 +52,30 @@ export class Vector extends Iterable {
 		else
 			return None;
 	}
+	get last() { return this._array[this.size - 1] }
+	get lastOption() {
+		if (this.nonEmpty)
+			return Some(this.last);
+		else
+			return None;
+	}
 
 	// Returns a copy of this vector where each item is unique by comparison (==)
 	get distinct() { return this.distinctBy((a, b) => a == b); }
+
+	// Constructs a string based on this vector
+	mkString(separator = '') {
+		if (this.isEmpty)
+			return '';
+		else {
+			let str = '';
+			for (let i = 0; i < this.size - 1; i++) {
+				str += this.get(i).toString();
+				str += separator;
+			}
+			return str + this.last;
+		}
+	}
 
 	// Retrieves an item at the specified index
 	get(index) { return this._array[index]; }

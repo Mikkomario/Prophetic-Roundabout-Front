@@ -8,7 +8,7 @@
 		<div v-if="meetingsAreAvailable">
 			<section class="block">
 				<h2 class="title is-3">Meetings you're hosting</h2>
-				<meeting-list is-host meetings="hostedMeetings"></meeting-list>
+				<meeting-list is-host :meetings="hostedMeetings"></meeting-list>
 				<div class="columns">
 					<div class="column has-text-right">
 						<button class="button is-primary" @click="schedule()">Schedule / Host a new Meeting</button>
@@ -17,7 +17,7 @@
 			</section>
 			<section class="block">
 				<h2 class="title is-3">Meetings hosted by others</h2>
-				<meeting-list meetings="joinableMeetings"></meeting-list>
+				<meeting-list :meetings="joinableMeetings"></meeting-list>
 			</section>
 		</div>
 		<div v-else>
@@ -32,13 +32,17 @@
 
 <script type="text/javascript">
 	import { mapActions } from 'vuex'
+	import { Vector } from '@/classes/Vector'
 	import MeetingList from '@/components/MeetingList.vue'
 
 	export default {
 		data() {
 			return {
 				isLoading: true, 
-				meetings: this.$store.state.myMeetings
+				meetings: {
+					hosting: Vector.empty, 
+					other: Vector.empty
+				}
 			}
 		}, 
 		computed: {
@@ -58,9 +62,16 @@
 			MeetingList
 		}, 
 		created() {
+			// Initializes meeting data with existing store resources
+			this.meetings = this.$store.state.myMeetings;
+			console.log(`Hosting: ${this.hostedMeetings.toString()}`)
+			console.log(`Other: ${this.joinableMeetings.toString()}`)
+
 			// Updates meetings data
 			const that = this;
 			this.readMeetings().then(newMeetings => {
+				console.log(`New Hosting: ${newMeetings.hosting.toString()}`)
+				console.log(`New Other: ${newMeetings.other.toString()}`)
 				that.meetings = newMeetings;
 				that.isLoading = false;
 

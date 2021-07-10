@@ -27,7 +27,7 @@ export class Duration {
 		if (this.isNegative) {
 			const days = this.toDays;
 			if (days < -1)
-				return `${floatTostring(days)} days`;
+				return `${floatToString(days)} days`;
 			else {
 				const hours = this.toHours;
 				if (hours < -1)
@@ -35,11 +35,11 @@ export class Duration {
 				else {
 					const minutes = this.toMinutes;
 					if (minutes < -1)
-						return `${floatTostring(minutes)} minutes`
+						return `${floatToString(minutes)} minutes`
 					else {
 						const seconds = this.toSeconds;
 						if (seconds < -1)
-							return `${floatTostring(seconds)} seconds`
+							return `${floatToString(seconds)} seconds`
 						else
 							return `${this.toMillis} milliseconds`
 					}

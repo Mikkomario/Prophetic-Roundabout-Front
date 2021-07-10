@@ -1,15 +1,12 @@
 import { createStore } from 'vuex'
 import { Option, Some, None } from '@/classes/Option'
 import { Vector } from '@/classes/Vector'
+import { RichDate, Now } from '@/classes/RichDate'
+import { minutes, seconds } from '@/classes/Duration'
 import { Roundabout } from '@/classes/Roundabout'
 import { Meeting } from '@/classes/Meeting'
 
-const millisToSeconds = 1000;
-const millisToHours = 60 * 60 * millisToSeconds;
-function secondsSince(date) { return Math.floor(date - new Date()) / millisToSeconds }
-function hoursSince(date) { return Math.floor(date - new Date()) / millisToHours }
-
-function updatedRecently(lastUpdate, seconds = 120) { return lastUpdate.exists(update => secondsSince(update) <= seconds) }
+function updatedRecently(lastUpdate, duration = seconds(120)) { return lastUpdate.exists(update => Now.since(update) < duration) }
 
 export default createStore({
 	state: {
@@ -18,7 +15,7 @@ export default createStore({
 		// Reads email, sessionKey and sessionStart from local storage
 		email: new Option(localStorage.email), 
 		sessionKey: new Option(localStorage.sessionKey), 
-		sessionStart: new Option(localStorage.sessionStart).map(dateNumber => new Date(parseInt(dateNumber, 10))), 
+		sessionStart: new Option(localStorage.sessionStart).map(dateNumber => new RichDate(new Date(parseInt(dateNumber, 10)))), 
 
 		myRoundabouts: Vector.empty, 
 		myRoundaboutsUpdate: None, 
@@ -32,7 +29,7 @@ export default createStore({
 	getters: {
 		// Returns whether a session should still be open (unless closed on server side)
 		isSessionOpen: state => {
-			return state.sessionStart.exists(start => hoursSince(start) < 21);
+			return state.sessionStart.exists(start => start.until(Now).toHours < 21.5);
 		}, 
 		// Returns the session key as a Authorization header value (bearer). Empty string if no session is open.
 		authorizationHeader: state => {
@@ -59,18 +56,24 @@ export default createStore({
 			state.sessionKey = Some(newKey);
 			localStorage.sessionKey = newKey;
 			const start = new Date();
-			state.sessionStart = Some(start);
+			state.sessionStart = Some(new RichDate(start));
 			localStorage.sessionStart = start.getTime();
 		}, 
 		setServerAddress(state, address) { state.serverAddress = address }, 
 		// Updates myRoundabouts, as well as the last update time for that value
 		setMyRoundabouts(state, roundabouts) {
 			state.myRoundabouts = roundabouts;
-			state.myRoundaboutsUpdate = Some(new Date());
+			state.myRoundaboutsUpdate = Some(Now.static);
 		}, 
 		setMyMeetings(state, meetings) {
+			console.log('Setting my meetings...');
+			console.log(meetings);
 			state.myMeetings = meetings;
-			state.myMeetingsUpdate = Some(new Date());
+			state.myMeetingsUpdate = Some(Now.static);
+		}, 
+		// Invalidates meetings so that they will be updated upon next myMeetings() call
+		invalidateMeetings(state) {
+			state.myMeetingsUpdate = None;
 		}
 	},
 	actions: { 
@@ -128,9 +131,9 @@ export default createStore({
 			if (getters.isSessionOpen) {
 				new Option(payload.since).flatten.foreach(t => {
 					if (payload.headers == null)
-						payload.headers = { 'If-Modified-Since': t.toUTCString() };
+						payload.headers = { 'If-Modified-Since': t.toHeaderValue };
 					else
-						payload.headers['If-Modified-Since'] = t.toUTCString();
+						payload.headers['If-Modified-Since'] = t.toHeaderValue;
 				});
 
 				// Performs the GET and handles status 304 (Not Modified)
@@ -226,13 +229,13 @@ export default createStore({
 					// Combines the data into a new set of meetings, then updates the cache
 					return roundaboutsPromise.then(roundabouts => {
 						const newUsersPromise = newHostIds.asyncMap(hostId => dispatch('getJson', `users/${hostId}`));
-						newUsersPromise.then(newUsers => {
+						return newUsersPromise.then(newUsers => {
 							const allUsers = oldMeetings.map(m => m.host).distinctBy((a, b) => a.id == b.id).plus(newUsers);
 							function roundaboutForId(id) { return roundabouts.find(r => r.id == id) }
 							function userForId(id) { return allUsers.find(user => user.id == id) }
 							function meetingFromJson(json) { return new Meeting(json.id, json.zoom_id, 
 								roundaboutForId(json.host_organization_id).get, json.name, 
-								new Date(json.start_time), json.duration_minutes, json.password, json.join_url, userForId(json.host_id)) 
+								new RichDate(json.start_time), minutes(json.duration_minutes), json.password, json.join_url, userForId(json.host_id)) 
 							}
 
 							const newMeetings = {

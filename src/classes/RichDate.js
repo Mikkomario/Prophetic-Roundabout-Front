@@ -9,7 +9,10 @@ export function localTimeZone() { return Intl.DateTimeFormat().resolvedOptions()
 class DateLike {
 	// Intended to be overwritten
 	get toDate() { return new Date() }
+
 	get toNewDate() { return new Date(this.toDate.getTime()) }
+	get toJson() { return this.toDate.toISOString() }
+	get toHeaderValue() { return this.toDate.toUTCString() }
 
 	valueOf() { return this.toDate.valueOf() }
 	equals(other) { return this.valueOf() == other.valueOf() }
@@ -41,7 +44,7 @@ class DateLike {
 	get dateString() {
 		// Uses different formatting based on context
 		// Case: Past time
-		if (isInPast) {
+		if (this.isInPast) {
 			const days = this.durationInPast.toDays
 			// Case: Far in the past
 			if (days > 6)
@@ -105,18 +108,28 @@ class DateLike {
 	get durationInPast() { return this.until(new Date()) }
 	get durationInFuture() { return this.since(new Date()) }
 
+	hasSameDateAs(other) {
+		return this.dayOfMonth == other.dayOfMonth && this.monthIndex == other.monthIndex && this.year == other.year;
+	}
+	hasSameTimeAs(other) {
+		if (other instanceof Duration)
+			return this.time.equals(other);
+		else
+			return this.time.equals(other.time);
+	}
+
 	until(date) {
 		if (date instanceof DateLike)
-			return new Duration(date.toDate - this._date);
+			return new Duration(date.toDate - this.toDate);
 		else
-			return new Duration(date - this._date);
+			return new Duration(date - this.toDate);
 	}
 	daysUntil(date) { return this.until(date).toDays }
 	since(date) {
 		if (date instanceof DateLike)
-			return new Duration(this._date - date.toDate);
+			return new Duration(this.toDate - date.toDate);
 		else
-			return new Duration(this._date - date);
+			return new Duration(this.toDate - date);
 	}
 	daysSince(date) { return this.since(date).toDays }
 
@@ -131,17 +144,36 @@ class DateLike {
 }
 
 export class RichDate extends DateLike {
-	constructor(wrapped) {
+	constructor(wrapped = new Date()) {
 		super();
 		this._date = wrapped instanceof Date ? wrapped : new Date(wrapped);
 	}
 
 	get toDate() { return this._date }
 
-	get atBeginningOfDay() { return this.minus(this.time); }
-	get atEndOfDay() { return this.plus(hours(24)).atBeginningOfDay }
+	get isToday() { return this.hasSameDateAs(new RichDate()) }
+	get isTomorrow() { return this.hasSameDateAs(new RichDate().tomorrow) }
 
-	// FIXME: Something is not working correctly here...
+	get atBeginningOfDay() { return this.minus(this.time); }
+	get atEndOfDay() { return this.tomorrow.atBeginningOfDay }
+	get tomorrow() { return this.plus(hours(24)) }
+	get yesterday() { return this.minus(hours(24)) }
+
+	hasSameDateAs(other) {
+		if (other instanceof DateLike)
+			return this.dayOfMonth == other.dayOfMonth && this.monthIndex == other.monthIndex && this.year == other.year;
+		else
+			return this.hasSameDateAs(new RichDate(other));
+	}
+	hasSameTimeAs(other) {
+		if (other instanceof DateLike)
+			return this.time.equals(other.time);
+		else if (other instanceof Duration)
+			return this.time.equals(other);
+		else
+			return this.hasSameTimeAs(new RichDate(other));
+	}
+
 	plus(duration) {
 		if (duration instanceof Duration)
 			return new RichDate(new Date(this._date.getTime() + duration.toMillis));
@@ -186,6 +218,19 @@ export class RichDate extends DateLike {
 class CurrentDate extends DateLike {
 	get isInPast() { return false }
 	get isInFuture() { return false }
+
+	// Converts this fluctuing date to a static date
+	get static() { return new RichDate(this.toDate) }
+
+	// Delegates some methods to the RichDate class
+	get atBeginningOfDay() { return this.static.atBeginningOfDay }
+	get atEndOfDay() { return this.static.atEndOfDay }
+
+	plus(duration) { return this.static.plus(duration) }
+	minus(duration) { return this.static.minus(duration) }
+
+	before(other) { return this.static.before(other) }
+	after(other) { return this.static.after(other) }
 }
 
 export const Now = new CurrentDate();

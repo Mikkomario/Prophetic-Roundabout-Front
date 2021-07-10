@@ -53,7 +53,7 @@
 
 <script type="text/javascript">
 	import bulmaCalendar from 'bulma-calendar';
-	import { mapActions } from 'vuex'
+	import { mapMutations, mapActions } from 'vuex'
 	import { Vector } from '@/classes/Vector'
 	import { Field } from '@/classes/Field'
 
@@ -96,9 +96,10 @@
 							}
 						}).then(response => {
 							if (response.ok) {
+								// TODO: Could technically parse the meeting from the response as well
 								that.errorMessage = '';
-								// TODO: Redirect to meetings
-								console.log('Schedule successful');
+								that.invalidateMeetings();
+								that.$router.push('meetings');
 							}
 							else {
 								// On 401 Unauthorized, redirects back to login
@@ -130,10 +131,10 @@
 				}
 			}, 
 			cancel() {
-				console.log('Cancelling')
-				// TODO: Navigate to meeting view
+				this.$router.push('meetings')
 			}, 
 
+			...mapMutations(['invalidateMeetings']), 
 			...mapActions(['myRoundabouts', 'push'])
 		}, 
 		created() {

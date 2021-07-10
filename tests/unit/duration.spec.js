@@ -95,4 +95,38 @@ describe('Duration', () => {
 		expect(days(4).isWeeks).toBe(false);
 		expect(days(20).isWeeks).toBe(true);
 	})
+
+	test('toString', () => {
+		expect(weeks(2).toString()).toBe('2 weeks');
+		expect(weeks(1).toString()).toBe('7 days');
+		expect(days(15).toString()).toBe('2 weeks 1 days');
+		expect(days(8).toString()).toBe('8 days');
+		expect(days(1).toString()).toBe('24 hours');
+		expect(hours(27).toString()).toBe('27 hours');
+		expect(hours(50).toString()).toBe('2 days 2 hours');
+		expect(hours(1).toString()).toBe('60 minutes');
+		expect(minutes(65).toString()).toBe('65 minutes');
+		expect(minutes(130).toString()).toBe('2 hours 10 minutes');
+		expect(minutes(1).toString()).toBe('60 seconds');
+		expect(seconds(90).toString()).toBe('90 seconds');
+		expect(seconds(130).toString()).toBe('2 minutes 10 seconds');
+		expect(seconds(1).toString()).toBe('1000 milliseconds');
+		expect(millis(1).toString()).toBe('1 milliseconds');
+		expect(millis(500).toString()).toBe('500 milliseconds');
+		expect(millis(1500).toString()).toBe('1.5 seconds');
+
+		expect(weeks(-2).toString()).toBe('-14 days');
+		expect(weeks(-1).toString()).toBe('-7 days');
+		expect(days(-8).toString()).toBe('-8 days');
+		expect(days(-1).toString()).toBe('-24 hours');
+		expect(hours(-36).toString()).toBe('-1.5 days');
+		expect(hours(-1).toString()).toBe('-60 minutes');
+		expect(minutes(-90).toString()).toBe('-1.5 hours');
+		expect(minutes(-1).toString()).toBe('-60 seconds');
+		expect(seconds(-90).toString()).toBe('-1.5 minutes');
+		expect(seconds(-1).toString()).toBe('-1000 milliseconds');
+		expect(millis(-1).toString()).toBe('-1 milliseconds');
+		expect(millis(-500).toString()).toBe('-500 milliseconds');
+		expect(millis(-1500).toString()).toBe('-1.5 seconds');
+	})
 })
