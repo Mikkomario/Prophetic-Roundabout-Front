@@ -20,6 +20,16 @@ export class Try {
 		else
 			return new Try(null, Some(new Error("Try failed")));
 	}
+	// Creates a try by wrapping the specified function in a try catch.
+	// If the specified parameter is not a function, wraps it into a success.
+	static apply(f) {
+		if (typeof(f) == 'function') {
+			try { return Try.success(f()) }
+			catch (error) { return Try.failure(error) } 
+		} 
+		else
+			return Try.success(f);
+	}
 
 	valueOf() { return this._value }
 	equals(other) { return this.valueOf() === other.valueOf() }

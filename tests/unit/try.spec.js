@@ -54,4 +54,15 @@ describe("Try", () => {
 		expect(f1.equals(f2)).toBe(true);
 		expect(s1.equals(f1)).toBe(false);
 	})
+	test('apply', () => {
+		const s1 = Try.apply(() => 1);
+		const s2 = Try.apply(2);
+		const f1 = Try.apply(() => throw new Error('test error'));
+
+		expect(s1.isSuccess).toBe(true);
+		expect(s1.get).toBe(1);
+		expect(s2.isSuccess).toBe(true);
+		expect(s2.get).toBe(2);
+		expect(f1.isSuccess).toBe(false);
+	})
 })

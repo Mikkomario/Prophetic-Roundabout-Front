@@ -26,6 +26,11 @@ const routes = [
 	component: () => import('../views/Me.vue')
 }, 
 {
+	path: '/oauth-result', 
+	name: 'OAuthResult', 
+	component: () => import('../views/OAuthResult.vue')
+}, 
+{
 	path: '/zoom-auth-result', 
 	name: 'ZoomAuthResult', 
 	component: () => import('../views/ZoomAuthResult.vue')
