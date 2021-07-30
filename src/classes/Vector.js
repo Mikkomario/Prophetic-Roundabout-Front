@@ -1,5 +1,5 @@
 import { Iterator } from './Iterator'
-import { Iterable } from './Iterable'
+import { Iterable, Builder } from './Iterable'
 import { Some, None, Option } from './Option'
 
 class IndexIterator extends Iterator {
@@ -119,6 +119,12 @@ export class Vector extends Iterable {
 		newArray.push(item);
 		return new Vector(newArray);
 	}
+	// Creates a new vector with exactly one item prepended, regardless of type
+	prependOne(item) {
+		const newArray = this._array.slice();
+		newArray.unshift(item);
+		return new Vector(newArray);
+	}
 
 	// Removes items which are considered duplicates by the specified testing function
 	// The specified function takes 2 items and returns true or false
@@ -133,13 +139,14 @@ export class Vector extends Iterable {
 }
 
 // A builder that exports vectors
-export class VectorBuilder {
+export class VectorBuilder extends Builder {
 	constructor() {
+		super();
 		this._array= [];
 	}
 
 	// Implemented
-	add(item) { this._array.push(item); }
+	addOne(item) { this._array.push(item); }
 	result() {
 		const r = new Vector(this._array);
 		this._array = [];

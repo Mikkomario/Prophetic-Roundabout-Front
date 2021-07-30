@@ -98,6 +98,7 @@ export class Duration {
 			}
 		}
 	}
+	get toJson() { return this._millis }
 
 	get isPositive() { return this._millis > 0 }
 	get isNegative() { return this._millis < 0 }

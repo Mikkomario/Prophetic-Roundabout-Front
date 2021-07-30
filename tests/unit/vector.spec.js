@@ -1,7 +1,18 @@
-import { Vector } from '@/classes/Vector'
+import { Vector, VectorBuilder } from '@/classes/Vector'
 
 describe('Vector', () => {
 	const v = new Vector([1, 2, 3]);
+
+	test('iterator', () => {
+		const iter = v.iterator();
+
+		expect(iter.hasNext).toBe(true);
+		expect(iter.next()).toBe(1);
+		expect(iter.hasNext).toBe(true);
+		expect(iter.next()).toBe(2);
+		expect(iter.next()).toBe(3);
+		expect(iter.hasNext).toBe(false);
+	})
 
 	test('size', () => {
 		expect(Vector.empty.size).toBe(0);
@@ -133,5 +144,30 @@ describe('Vector', () => {
 		expect(v2.size).toBe(2);
 		expect(v2.head).toBe(1);
 		expect(v2.get(1)).toBe(2);
+	})
+
+	test('plus', () => {
+		const v2 = v.plus(4);
+		const v3 = v.plus(v);
+		const v4 = v.plus([1, 2]);
+
+		expect(v2.size).toBe(4);
+		expect(v2.get(3)).toBe(4);
+		expect(v3.size).toBe(6);
+		expect(v3.get(4)).toBe(2);
+		expect(v4.size).toBe(5);
+		expect(v4.get(3)).toBe(1);
+	})
+
+	test('VectorBuilder', () => {
+		const builder = new VectorBuilder();
+		builder.add(1);
+		builder.add([2, 3]);
+		const v2 = builder.result();
+		const v3 = builder.result();
+
+		expect(v2.size).toBe(3);
+		expect(v2.get(2)).toBe(3);
+		expect(v3.isEmpty).toBe(true);
 	})
 })

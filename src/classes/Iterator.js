@@ -32,9 +32,9 @@ export class Iterator {
 	}
 
 	// Converts the remaining items in this iterator to another collection by using the specified builder
-	// Expects parameter builder, which contains methods .add(item) and .result()
+	// Expects parameter builder, which contains methods .addOne(item) and .result()
 	to(builder) {
-		this.foreach(item => builder.add(item));
+		this.foreach(item => builder.addOne(item));
 		return builder.result();
 	}
 

@@ -1,11 +1,29 @@
+// Abstract class
+// Builders must implement addOne(...) and result()
+export class Builder {
+	addOne(item) { throw new Error('.addOne(...) is not implemented') }
+	result() { throw new Error('.result() is not implemented') }
+
+	// Adds possibly multiple items to this builder
+	add(item) {
+		if (item.foreach !== undefined)
+			item.foreach(a => this.addOne(a));
+		else if (Array.isArray(item))
+			item.forEach(a => this.addOne(a));
+		else
+			this.addOne(item);
+	}
+}
+
 // A simple builder class
 // Builders have methods add(item) and result() which builds the complete item
-export class ArrayBuilder {
+export class ArrayBuilder extends Builder {
 	constructor() {
+		super();
 		this._buffer = [];
 	}
 
-	add(item) {
+	addOne(item) {
 		this._buffer.push(item);
 	}
 	result() {
@@ -29,7 +47,7 @@ export class Iterable {
 	get isEmpty() { return !this.nonEmpty }
 
 	// The first item in this iterable
-	get head() { return this.iterator().next }
+	get head() { return this.iterator().next() }
 
 	// An array with the contents of this iterable item
 	get toArray() { return this.iterator().toArray }
@@ -61,21 +79,21 @@ export class Iterable {
 	contains(a) { return this.exists(v => v == a) }
 
 	// Converts this collection to another form using the specified builder parameter
-	// The builder should have methods .add(item) and .result()
+	// The builder should have methods .addOne(item) and .result()
 	to(builder = new ArrayBuilder) { return this.iterator().to(builder) }
 
 	// Only keeps items that are accepted by the specified filter function
 	filterWith(f, builder = new ArrayBuilder()) {
 		this.foreach(a => {
 			if (f(a))
-				builder.add(a);
+				builder.addOne(a);
 		})
 		return builder.result();
 	}
 
 	// Maps the contents of this iterable item into another iterable item
 	mapWith(f, builder = new ArrayBuilder()) {
-		this.foreach(a => builder.add(f(a)));
+		this.foreach(a => builder.addOne(f(a)));
 		return builder.result();
 	}
 	// Maps the contents of this iterable item into another iterable item. Flattens in between.
@@ -83,11 +101,11 @@ export class Iterable {
 		this.foreach(a => {
 			const items = f(a);
 			if (items instanceof Iterable)
-				items.foreach(item => builder.add(item));
+				items.foreach(item => builder.addOne(item));
 			else if (Array.isArray(items))
-				items.forEach(item => builder.add(item));
+				items.forEach(item => builder.addOne(item));
 			else
-				builder.add(items);
+				builder.addOne(items);
 		});
 		return builder.result();
 	}
@@ -95,11 +113,11 @@ export class Iterable {
 	fattenWith(builder = new ArrayBuilder) {
 		this.foreach(a => {
 			if (a instanceof Iterable)
-				a.foreach(item => builder.add(item));
+				a.foreach(item => builder.addOne(item));
 			else if (Array.isArray(a))
-				a.forEach(item => builder.add(item));
+				a.forEach(item => builder.addOne(item));
 			else
-				builder.add(a);
+				builder.addOne(a);
 		})
 		return builder.result();
 	}
@@ -110,7 +128,7 @@ export class Iterable {
 			// Wraps the result into a promise to make sure it can be awaited
 			const mapResult = Promise.resolve(f(iter.next()));
 			const waitResult = await mapResult;
-			builder.add(waitResult);
+			builder.addOne(waitResult);
 		}
 		return builder.result();
 	}

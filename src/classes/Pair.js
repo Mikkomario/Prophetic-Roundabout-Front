@@ -1,3 +1,6 @@
+import { Iterator } from './Iterator'
+import { Iterable } from './Iterable'
+import { Option } from './Option'
 
 class PairIterator extends Iterator {
 	constructor(first, second) {
@@ -40,7 +43,12 @@ export class Pair extends Iterable {
 	// Implemented
 	iterator() { return new PairIterator(this.first, this.second); }
 	toString() { return `(${this.first}, ${this.second})` }
+	map(f) { return new Pair(f(this.first), f(this.second)); }
+	find(f) { return new Option(this._find(f)); }
 
 	withFirst(first) { return new Pair(first, this.second) }
 	withSecond(second) { return new Pair(this.first, second) }
+
+	mapFirst(f) { return this.withFirst(f(this.first)); }
+	mapSecond(f) { return this.withSecond(f(this.second)); }
 }
