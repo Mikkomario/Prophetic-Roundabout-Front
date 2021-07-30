@@ -143,7 +143,7 @@
 				that.name = json.name;
 				new Option(json.roundabout).foreach(rb => {
 					that.isProAccount = rb.owns_pro_zoom_account;
-					that.authorizedServiceIds = new Vector(rb.authorized_service_ids);
+					that.authorizedServiceIds = Some(new Vector(rb.authorized_service_ids));
 					// that.isLinkedToZoom = new Option(rb.is_zoom_authorized)
 
 					// Reads the time zone also. 

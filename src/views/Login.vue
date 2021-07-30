@@ -77,7 +77,7 @@
 									sessionKey: sessionKey.replace(/"/g,"")
 								});
 								// Moves the user to the next destination
-								that.$router.push(new Option(that.$router.query.next).getOrElse('me'));
+								that.$router.push(new Option(that.$route.query.next).getOrElse('me'));
 							}).catch(e => console.log(e));
 						}
 						else
