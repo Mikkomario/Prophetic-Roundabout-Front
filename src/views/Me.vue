@@ -31,11 +31,15 @@
 							<th class="hast-text-right">Zoom Status</th>
 							<td>{{ zoomStatus }}</td>
 						</tr>
+						<tr>
+							<th class="hast-text-right">Google Status</th>
+							<td>{{ googleStatus }}</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
 		</div>
-		<!-- TODO: Add Zoom authentication -->
+		<!--  
 		<div class="block" v-if="zoomAuthEnabled">
 			<div class="box">
 				<p class="content">
@@ -48,13 +52,14 @@
 					Enable Zoom Features
 				</button>
 			</div>
-		</div>
+		</div> -->
 	</div>
 </template>
 
 <script type="text/javascript">
-	import { mapGetters, mapActions } from 'vuex'
+	import { mapActions } from 'vuex'
 	import { Option, Some, None } from '@/classes/Option'
+	import { Vector } from '@/classes/Vector'
 
 	export default {
 		data() {
@@ -62,6 +67,7 @@
 				name: '', 
 				timeZone: new Option(Intl.DateTimeFormat().resolvedOptions().timeZone), 
 				isProAccount: false, 
+				authorizedServiceIds: None, 
 				isLinkedToZoom: None, 
 				isLoadingZoom: false
 			}
@@ -80,9 +86,9 @@
 			}, 
 			// String status of this user's zoom account state
 			zoomStatus() {
-				return this.isLinkedToZoom.match(
-					isLinked => {
-						if (isLinked) {
+				return this.authorizedServiceIds.match(
+					serviceIds => {
+						if (serviceIds.contains(1)) {
 							if (this.isProAccount)
 								return 'Pro/Paid Account';
 							else
@@ -93,12 +99,22 @@
 					}, 
 					() => 'Unknown');
 			}, 
+			googleStatus() {
+				return this.authorizedServiceIds.match(
+					serviceIds => {
+						if (serviceIds.contains(2))
+							return 'Linked';
+						else
+							return 'Not linked yet';
+					}, () => 'Unknown')
+			}, 
 			// Whether Zoom authorization should be provided
-			zoomAuthEnabled() { return this.isLinkedToZoom.contains(false) }, 
+			// zoomAuthEnabled() { return this.isLinkedToZoom.contains(false) }, 
 
-			...mapGetters(['authorizationHeader'])
+			// ...mapGetters(['authorizationHeader'])
 		}, 
 		methods: {
+			/*
 			redirectToZoomAuth() {
 				this.isLoadingZoom = true;
 				const that = this;
@@ -116,7 +132,7 @@
 						}
 					)
 				}, e => console.log(e)).finally(that.isLoadingZoom = false);
-			}, 
+			},*/ 
 
 			...mapActions(['getJson', 'push'])
 		}, 
@@ -127,7 +143,8 @@
 				that.name = json.name;
 				new Option(json.roundabout).foreach(rb => {
 					that.isProAccount = rb.owns_pro_zoom_account;
-					that.isLinkedToZoom = new Option(rb.is_zoom_authorized)
+					that.authorizedServiceIds = new Vector(rb.authorized_service_ids);
+					// that.isLinkedToZoom = new Option(rb.is_zoom_authorized)
 
 					// Reads the time zone also. 
 					// If it hasn't been updated on server side, sends the data read from browser

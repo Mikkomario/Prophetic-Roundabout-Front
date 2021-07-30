@@ -26,6 +26,7 @@
 
 <script type="text/javascript">
 	import { mapGetters, mapMutations } from 'vuex'
+	import { Option } from '@/classes/Option'
 	import { Field } from '@/classes/Field'
 
 	export default {
@@ -75,7 +76,8 @@
 									email: email, 
 									sessionKey: sessionKey.replace(/"/g,"")
 								});
-								that.$router.push('me');
+								// Moves the user to the next destination
+								that.$router.push(new Option(that.$router.query.next).getOrElse('me'));
 							}).catch(e => console.log(e));
 						}
 						else
