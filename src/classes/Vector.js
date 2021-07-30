@@ -131,3 +131,18 @@ export class Vector extends Iterable {
 		return new Vector(array);
 	}
 }
+
+// A builder that exports vectors
+export class VectorBuilder {
+	constructor() {
+		this._array= [];
+	}
+
+	// Implemented
+	add(item) { this._array.push(item); }
+	result() {
+		const r = new Vector(this._array);
+		this._array = [];
+		return r;
+	}
+}

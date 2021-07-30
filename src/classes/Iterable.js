@@ -32,11 +32,7 @@ export class Iterable {
 	get head() { return this.iterator().next }
 
 	// An array with the contents of this iterable item
-	get toArray() {
-		const array = [];
-		this.foreach(a => array.push(a));
-		return array;
-	}
+	get toArray() { return this.iterator().toArray }
 
 	// Calls the specified function for each item
 	foreach(f) { this.iterator().foreach(f); }
@@ -63,6 +59,10 @@ export class Iterable {
 
 	// Checks whether the value equals another
 	contains(a) { return this.exists(v => v == a) }
+
+	// Converts this collection to another form using the specified builder parameter
+	// The builder should have methods .add(item) and .result()
+	to(builder = new ArrayBuilder) { return this.iterator().to(builder) }
 
 	// Only keeps items that are accepted by the specified filter function
 	filterWith(f, builder = new ArrayBuilder()) {

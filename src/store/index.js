@@ -174,6 +174,30 @@ export default createStore({
 				return Promise.reject(new Error("No user session open"));
 		}, 
 
+		// Authenticates the user for a task in a service by redirecting them to an external OAuth process
+		// Payload consists of:
+		// - serviceId: Int - Id of the targeted service (1 for Zoom, 2 for Google) - May also be a string ('zoom' or 'google')
+		// - taskId: Int - Id of the task the user wants to perform
+		authenticate({ state, dispatch }, payload) {
+			if (payload.serviceId != null && payload.taskId != null) {
+				return dispatch('push', {
+					path: `services/${payload.serviceId}/auth/preparations`, 
+					body: { task_id: payload.taskId }
+				}).then(response => {
+					if (response.ok)
+						return response.json();
+					else
+						throw new Error(`Authentication preparation failed with error code ${response.status}`);
+				}).then(preparationJson => {
+					// Redirects the user to the authentication process
+					const url = state.serverAddress + `services/${payload.serviceId}/auth?token=${preparationJson.token}`;
+					location.href = url
+				})
+			}
+			else
+				return Promise.reject(new Error('serviceId and taskId are required in payload'))
+		}, 
+
 		// Returns the user's current roundabouts
 		// Updates state if necessary
 		myRoundabouts({ state, getters, dispatch, commit }) {

@@ -57,16 +57,19 @@
 	import { Vector } from '@/classes/Vector'
 	import { Field } from '@/classes/Field'
 
+	// TODO: Continue adding OAuth check (now only some data properties were added)
 	export default {
 		data() {
 			return {
-				roundabouts: Vector.empty, 
-				selectedRoundaboutId: -1, 
-				roundaboutFlag: false, 
-				date: new Date(), 
-				nameField: Field.empty(true), 
-				isLoading: false, 
-				errorMessage: ''
+				roundabouts: Vector.empty, // Selectable roundabouts, initialized on created()
+				selectedRoundaboutId: -1, // Id of the currently selected roundabout (modeled in drop down)
+				roundaboutFlag: false, // True while roundabout selection warning should be displayed
+				date: new Date(), // Selected date (initially today)
+				nameField: Field.empty(true), // Meeting name field
+				isLoading: false, // True when sending data
+				errorMessage: '', // Empty while no error is present
+				isLoadingAuth: true, // True while loading authentication (initial), then false
+				requiredServices: Vector.empty // Services are { name: String, id: Int } objects - This property is initiated once auth is checked
 			}
 		}, 
 		computed: {

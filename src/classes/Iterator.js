@@ -9,6 +9,12 @@ export class Iterator {
 
 	// Concrete methods
 
+	get toArray() {
+		const array = [];
+		this.foreach(a => array.push(a));
+		return array;
+	}
+
 	// Next item as an option. None when this iterator has reached its end.
 	/*
 	get nextOption() {
@@ -25,6 +31,12 @@ export class Iterator {
 		}
 	}
 
+	// Converts the remaining items in this iterator to another collection by using the specified builder
+	// Expects parameter builder, which contains methods .add(item) and .result()
+	to(builder) {
+		this.foreach(item => builder.add(item));
+		return builder.result();
+	}
 
 	// To support javascript iterator & iterable (return in [Symbol.iterator]())
 	get symbol() {
